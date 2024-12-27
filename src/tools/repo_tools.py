@@ -1,27 +1,25 @@
 import requests
-from tools.utils.repo import build_file_structure
+from src.tools.utils.repo import build_file_structure
+from src.static.repo_static import repo_static
 
-repo_file_structure_cache = {}
-
-def get_repo_file_structure(repo_owner:str, repo_name:str)->str:
+def get_repo_file_structure()->str:
     """
-    This function makes a request to the GitHub API to retrieve the file structure of the specified repository.
-    It constructs the API URL using the provided repository owner and name, and sends a GET request to this URL.
-    If the request is successful and the response contains file paths, it builds a nested dictionary representing
-    the file structure and returns it as a string. If the request fails or the response does not contain file paths,
-    it returns an appropriate error message.
+    This function gives file and folder structure of the repository.
 
     Args:
-        repo_owner (str): The owner of the repository (e.g., 'octocat').
-        repo_name (str): The name of the repository (e.g., 'Hello-World').
+        None
     Returns:
         str: A nested dictionary representing the file structure in string format, 
              or an error message if the request fails or the response does not contain file paths.
     """
-    repo_key = (repo_owner, repo_name)
-    if repo_key in repo_file_structure_cache:
-        return repo_file_structure_cache[repo_key]
 
+    # check if the file structure is already fetched
+    if  repo_static.file_structure:
+        return repo_static.file_structure
+
+    # initialize the repo details
+    repo_owner = repo_static.username
+    repo_name = repo_static.repo
     url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/git/trees/main?recursive=1'
     try:
         response = requests.get(url)
@@ -33,7 +31,7 @@ def get_repo_file_structure(repo_owner:str, repo_name:str)->str:
         if 'tree' in data:
             file_paths = [file['path'] for file in data['tree']]  # Extract file paths from the response
             file_structure = str(build_file_structure(file_paths))  # Build a nested dictionary from the file paths and return it as string representation
-            repo_file_structure_cache[repo_key] = file_structure
+            repo_static.file_structure = file_structure
             return file_structure
         else:
             return "Error: No file paths found in the response data"
@@ -41,20 +39,22 @@ def get_repo_file_structure(repo_owner:str, repo_name:str)->str:
         # Handle the case where the API request fails
         return f"Error: Unable to fetch repository data. {str(e)}"
 
-def explore_directory(repo_owner:str, repo_name:str, path:str)->str:
+def explore_directory(path:str)->str:
     """
-    Given a repository owner, name, and a path, this function will return the files
+    This function will return the files
     and subdirectories at the specified path. If the path doesn't exist,
     it will suggest available options in the parent directory.
 
     Args:
-        repo_owner (str): The owner of the repository.
-        repo_name (str): The name of the repository.
         path (str): The path to explore.
 
     Returns:
         str: A string listing files and subdirectories, or suggestions if the path doesn't exist.
     """
+    # initialize the repo details
+    repo_owner = repo_static.username
+    repo_name = repo_static.repo
+
     try:
         file_structure_str = get_repo_file_structure(repo_owner, repo_name)
         if isinstance(file_structure_str, str) and file_structure_str.startswith("Error"):
@@ -88,20 +88,22 @@ def explore_directory(repo_owner:str, repo_name:str, path:str)->str:
         return f"An unexpected error occurred: {e}"
 
 
-def get_file(repo_owner:str, repo_name:str, file_path:str, branch:str='main')->str:
+def get_file( file_path:str, branch:str='main')->str:
     """
-    Given the repository owner, name, file path, and branch, this function fetches the contents of the file
+    Given the file path, and branch, this function fetches the contents of the file
     from the raw GitHub URL.
 
     Args:
-        repo_owner (str): The owner of the repository (e.g., 'octocat').
-        repo_name (str): The name of the repository (e.g., 'Hello-World').
         file_path (str): The file path relative to the root of the repository (e.g., 'src/main/java/App.java').
         branch (str): The branch from which to fetch the file (default is 'main').
 
     Returns:
         str: The content of the file, or an error message if the file is not found or not supported.
     """
+    # initialize the repo details
+    repo_owner = repo_static.username
+    repo_name = repo_static.repo
+
     # List of allowed file extensions for code-related files
     allowed_extensions = [
         '.py', '.java', '.js', '.html', '.css', '.cpp', '.c', '.h', '.json', '.xml', '.md', '.txt',

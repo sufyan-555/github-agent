@@ -1,5 +1,11 @@
 import streamlit as st
-from agents.repoagent import repo_agent
+from phi.agent import RunResponse
+from typing import Iterator
+from src.agents.repo_agent import repo_agent
+from src.static.repo_static import repo_static
+
+
+repo_static.update_repo_details(username='sufyan-555',repo='ExpertConnect')
 
 st.title("GitHub Repo Agent")
 
