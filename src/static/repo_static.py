@@ -4,7 +4,8 @@ class RepoStatic():
         self.username = None
         self.repo = None
         self.file_structure = None
-    
+        self.summary = None
+
     def update_repo_details(self, username:str, repo:str):
         self.username = username
         self.repo = repo

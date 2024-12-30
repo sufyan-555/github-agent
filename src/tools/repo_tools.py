@@ -87,7 +87,6 @@ def explore_directory(path:str)->str:
     except Exception as e:
         return f"An unexpected error occurred: {e}"
 
-
 def get_file( file_path:str, branch:str='main')->str:
     """
     Given the file path, and branch, this function fetches the contents of the file
@@ -125,3 +124,38 @@ def get_file( file_path:str, branch:str='main')->str:
     except requests.exceptions.RequestException as e:
         # Handle error case if the file is not found or there is any issue with the request
         return f"Error: Unable to fetch file content. {str(e)}.\nMake sure the file path is correct."
+
+def save_summary(summary:str):
+    """
+    This function saves the summary of the repository.
+
+    Args:
+        summary (str): The summary of the repository.
+    Returns:
+        None
+    """
+    try:
+        # Save the summary to the static object
+        repo_static.summary = summary
+        return "Summary saved successfully!"
+    except Exception as e:
+        return f"An unexpected error occurred: {e}"
+    
+def get_repo_summary()->str:
+    """
+    This function gives the summary of the repository.
+
+    Args:
+        None
+    Returns:
+        str: The summary of the repository, or an error message if the request fails.
+    """
+    # check if the summary is already fetched
+    if  repo_static.summary:
+        return repo_static.summary
+    else:
+        return (
+            "No summary found. It seems the repository summary has not been generated yet.\n"
+            "delegate this task to the `repo_summarizer` agent to generate the summary.\n"
+            "Once the summary is generated, I will save it and provide you with the result.\n"
+        )

@@ -1,28 +1,34 @@
 import streamlit as st
-from phi.agent import RunResponse
-from typing import Iterator
-from src.agents.repo_agent import repo_agent
 from src.static.repo_static import repo_static
+from src.agents.crew import crew
+from pprint import pprint
 
-
-repo_static.update_repo_details(username='sufyan-555',repo='ExpertConnect')
-
-st.title("GitHub Repo Agent")
+st.set_page_config(layout="wide")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+with st.sidebar:
+    username = st.text_input("GitHub Username")
+    repo_id = st.text_input("Repository ID")
 
-if prompt := st.chat_input("What is your query?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+if username and repo_id:
+    repo_static.update_repo_details(username, repo_id)
 
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = repo_agent.run(prompt)
-        message_placeholder.markdown(full_response.content)
-        st.session_state.messages.append({"role": "assistant", "content": full_response.content})
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    if prompt := st.chat_input("What is your query?"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            with st.spinner("Processing..."):
+                full_response = crew.run(prompt)
+            message_placeholder.markdown(full_response.content)
+            st.session_state.messages.append({"role": "assistant", "content": full_response.content})
+else:
+    st.warning("Please enter the GitHub username and repository Id to begin")
