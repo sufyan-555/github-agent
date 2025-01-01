@@ -9,6 +9,5 @@ repo_llm =  Gemini(
     )
 
 coder_llm = Gemini(
-        id='gemini-2.0-flash-thinking-exp-1219',
         api_key=os.environ['api']
     )

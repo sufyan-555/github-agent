@@ -1,7 +1,6 @@
 import streamlit as st
 from src.static.repo_static import repo_static
 from src.agents.crew import crew
-from pprint import pprint
 
 st.set_page_config(layout="wide")
 
@@ -28,7 +27,8 @@ if username and repo_id:
             message_placeholder = st.empty()
             with st.spinner("Processing..."):
                 full_response = crew.run(prompt)
-            message_placeholder.markdown(full_response.content)
-            st.session_state.messages.append({"role": "assistant", "content": full_response.content})
+                full_response = full_response.content
+            message_placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
 else:
     st.warning("Please enter the GitHub username and repository Id to begin")
